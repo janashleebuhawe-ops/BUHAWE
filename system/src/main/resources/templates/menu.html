@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --accent-light: rgba(37,99,235,0.07); --border: #e4e2dc;
+            --text: #1a1a1a; --text-muted: #6b7280; --sidebar-bg: #1e293b;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+
+        .top-bar {
+            position: fixed; top: 0; left: 0; right: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 32px; background: var(--surface);
+            border-bottom: 1px solid var(--border); z-index: 100;
+        }
+        .top-bar-logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon span { color: white; font-weight: 800; font-size: 16px; }
+        .logo-text { font-weight: 700; font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
+
+        .user-area { display: flex; align-items: center; gap: 12px; }
+        .user-name { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+        .user-name strong { color: var(--text); }
+        .logout-btn {
+            background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
+            font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .2s;
+        }
+        .logout-btn:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+        .page-content { margin-top: 80px; width: 100%; max-width: 960px; }
+
+        .greeting { margin-bottom: 40px; }
+        .greeting-tag {
+            display: inline-block; background: var(--accent-light); color: var(--accent);
+            font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 100px;
+            border: 1px solid rgba(37,99,235,0.2); margin-bottom: 12px; letter-spacing: 0.3px;
+        }
+        .greeting h1 { font-family: 'DM Serif Display', serif; font-size: 40px; color: var(--text); letter-spacing: -1px; margin-bottom: 6px; }
+        .greeting h1 em { color: var(--accent); font-style: italic; }
+        .greeting p { font-size: 15px; color: var(--text-muted); }
+
+        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .menu-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+            padding: 28px 20px; text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; align-items: flex-start;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+        }
+        .menu-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(37,99,235,0.1); transform: translateY(-3px); }
+
+        .card-wide { grid-column: span 4; flex-direction: row; align-items: center; gap: 20px; background: var(--sidebar-bg); border-color: #334155; }
+        .card-wide:hover { border-color: #3b82f6; }
+        .card-wide .card-title { color: #f8fafc; }
+        .card-wide .card-desc { color: #94a3b8; }
+
+        .card-icon {
+            width: 48px; height: 48px; background: var(--accent-light); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+            margin-bottom: 16px; transition: background .2s;
+        }
+        .card-wide .card-icon { background: rgba(59,130,246,0.15); margin-bottom: 0; }
+        .menu-card:hover .card-icon { background: var(--accent); }
+
+        .card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        @media (max-width: 800px) {
+            .menu-grid { grid-template-columns: repeat(2,1fr); }
+            .card-wide { grid-column: span 2; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-logo">
+        <div class="logo-icon"><span>B</span></div>
+        <span class="logo-text">BUHAWE</span>
+    </div>
+    <div class="user-area">
+        <span class="user-name">Hello, <strong sec:authentication="name">User</strong></span>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="logout-btn">Sign Out</button>
+        </form>
+    </div>
+</div>
+
+<div class="page-content">
+    <div class="greeting">
+        <span class="greeting-tag">Signed In</span>
+        <h1>Good to see you, <em sec:authentication="name">User</em>.</h1>
+        <p>Select a module below to get started.</p>
+    </div>
+
+    <div class="menu-grid">
+        <a th:href="@{/dashboard}" class="menu-card card-wide">
+            <div class="card-icon">📊</div>
+            <div>
+                <div class="card-title">Dashboard</div>
+                <div class="card-desc">Sales analytics, revenue trends, and system overview</div>
+            </div>
+        </a>
+
+        <a th:href="@{/users}" class="menu-card" sec:authorize="hasRole('ADMIN')">
+            <div class="card-icon">👤</div>
+            <div class="card-title">Users</div>
+            <div class="card-desc">Manage accounts and roles</div>
+        </a>
+
+        <a th:href="@{/items}" class="menu-card">
+            <div class="card-icon">📦</div>
+            <div class="card-title">Inventory</div>
+            <div class="card-desc">Track stock and products</div>
+        </a>
+
+        <a th:href="@{/orders}" class="menu-card">
+            <div class="card-icon">🛒</div>
+            <div class="card-title">Sales</div>
+            <div class="card-desc">Manage orders and POS</div>
+        </a>
+
+        <a th:href="@{/labor}" class="menu-card">
+            <div class="card-icon">🛠️</div>
+            <div class="card-title">Labor</div>
+            <div class="card-desc">Payroll and staff info</div>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

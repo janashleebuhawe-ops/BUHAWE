@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BUHAWE | Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0;
+            --surface: #ffffff;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-light: rgba(37,99,235,0.08);
+            --border: #e4e2dc;
+            --text: #1a1a1a;
+            --text-muted: #6b7280;
+            --input-bg: #fafaf8;
+            --danger-bg: #fef2f2; --danger: #dc2626; --danger-border: #fecaca;
+            --success-bg: #f0fdf4; --success: #16a34a; --success-border: #bbf7d0;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .wrapper {
+            display: grid;
+            grid-template-columns: 1fr 460px;
+            gap: 0;
+            width: 100%;
+            max-width: 900px;
+            background: var(--surface);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Left panel */
+        .panel {
+            background: #1e293b;
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .logo-svg { width: 100%; max-width: 260px; margin-bottom: 48px; }
+        .panel-headline {
+            font-family: 'DM Serif Display', serif;
+            font-size: 36px;
+            line-height: 1.2;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .panel-headline em { color: #60a5fa; font-style: italic; }
+        .panel-sub { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+        .panel-features { margin-top: 36px; display: flex; flex-direction: column; gap: 12px; }
+        .feat { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; }
+        .feat-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; }
+        .panel-footer { font-size: 11px; color: #475569; margin-top: 48px; }
+
+        /* Right / form */
+        .form-side { padding: 52px 44px; display: flex; flex-direction: column; justify-content: center; }
+        .form-header { margin-bottom: 32px; }
+        .form-header h1 { font-size: 24px; font-weight: 600; color: var(--text); letter-spacing: -0.4px; margin-bottom: 4px; }
+        .form-header p { font-size: 14px; color: var(--text-muted); }
+        .divider { width: 28px; height: 2px; background: var(--accent); border-radius: 2px; margin-bottom: 28px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 7px; }
+        .form-group input {
+            width: 100%; padding: 11px 14px;
+            background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+            color: var(--text); transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group input::placeholder { color: #b4b1a9; }
+        .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: #fff; }
+
+        .btn {
+            width: 100%; padding: 13px; background: var(--accent); color: #fff;
+            border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px;
+            transition: background .2s, transform .15s, box-shadow .2s;
+        }
+        .btn:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.28); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .alert { margin-top: 14px; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+        .alert-error { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+        .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+        .form-footer { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; }
+        .form-footer p { font-size: 13px; color: var(--text-muted); }
+        .form-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        .form-footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 700px) {
+            .wrapper { grid-template-columns: 1fr; }
+            .panel { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- Left panel -->
+    <div class="panel">
+        <div>
+            <svg class="logo-svg" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6"/>
+                        <stop offset="100%" style="stop-color:#818cf8"/>
+                    </linearGradient>
+                </defs>
+                <polygon points="32,4 50,13 54,34 42,50 22,50 10,34 14,13" fill="url(#lg1)"/>
+                <polygon points="32,10 47,18 50,34 40,46 24,46 14,34 17,18" fill="none" stroke="white" stroke-width="0.6" opacity="0.2"/>
+                <text x="32" y="38" text-anchor="middle" font-family="DM Sans" font-size="20" font-weight="800" fill="white" opacity="0.95">B</text>
+                <rect x="66" y="8" width="1.5" height="48" rx="1" fill="url(#lg1)" opacity="0.5"/>
+                <text x="76" y="40" font-family="DM Sans" font-size="30" font-weight="800" fill="#f8fafc" letter-spacing="0.5">BUHAWE</text>
+                <text x="78" y="57" font-family="DM Sans" font-size="7" font-weight="400" fill="#64748b" letter-spacing="3">ORDERING SYSTEM</text>
+            </svg>
+            <h2 class="panel-headline">Order smarter,<br>serve <em>faster</em>.</h2>
+            <p class="panel-sub">Manage your orders, staff, and inventory all in one place.</p>
+            <div class="panel-features">
+                <div class="feat"><span class="feat-dot"></span>Real-time sales tracking</div>
+                <div class="feat"><span class="feat-dot"></span>Inventory management</div>
+                <div class="feat"><span class="feat-dot"></span>Staff and payroll tools</div>
+                <div class="feat"><span class="feat-dot"></span>Instant receipts</div>
+            </div>
+        </div>
+        <p class="panel-footer">&copy; 2026 BUHAWE Ordering System</p>
+    </div>
+
+    <!-- Form side -->
+    <div class="form-side">
+        <div class="form-header">
+            <h1>Welcome back</h1>
+            <p>Sign in to your account to continue</p>
+        </div>
+        <div class="divider"></div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" placeholder="Enter your username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn">Sign In</button>
+
+            <div th:if="${param.error}" class="alert alert-error">⚠️ Incorrect username or password. Please try again.</div>
+            <div th:if="${param.disabled}" class="alert alert-error">📧 Your account is pending verification. Please check your email.</div>
+            <div th:if="${param.logout}" class="alert alert-success">✅ You've been signed out successfully.</div>
+            <div th:if="${param.success}" class="alert alert-success">✅ Account created! You can now sign in.</div>
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        </form>
+
+        <div class="form-footer">
+            <p>No account yet? <a th:href="@{/register}">Create one here</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

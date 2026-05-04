@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Inventory</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --accent-light: rgba(37,99,235,0.08); --success: #16a34a; --danger: #dc2626;
+            --border: #e4e2dc; --text: #1a1a1a; --text-muted: #6b7280; --input-bg: #fafaf8;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; padding: 40px; color: var(--text); }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto 24px auto;
+        }
+        .header-left h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 3px; }
+        .header-left p { font-size: 14px; color: var(--text-muted); }
+        .nav-btns { display: flex; gap: 8px; align-items: center; }
+        .nav-btn {
+            font-size: 13px; font-weight: 500; color: var(--text-muted); background: var(--surface);
+            border: 1px solid var(--border); padding: 9px 16px; border-radius: 9px;
+            cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all .2s;
+        }
+        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .nav-btn-accent { color: var(--accent); border-color: rgba(37,99,235,0.3); background: var(--accent-light); }
+        .nav-btn-accent:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .alert { max-width: 1200px; margin: 0 auto 16px auto; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; }
+        .alert-success { background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2); }
+
+        .card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+            max-width: 1200px; margin: 0 auto 20px auto; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
+
+        /* Add form */
+        .add-form { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 0.8fr 0.8fr auto; gap: 12px; align-items: flex-end; }
+        .input-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+        .input-group input {
+            width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 9px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); transition: border-color .2s;
+        }
+        .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+        .input-group input::placeholder { color: #b4b1a9; }
+
+        .btn-primary {
+            padding: 0 20px; height: 42px; background: var(--accent); color: white; border: none;
+            border-radius: 9px; font-weight: 600; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            cursor: pointer; white-space: nowrap; transition: background .2s, box-shadow .2s;
+        }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(37,99,235,0.25); }
+
+        /* Inventory table toolbar */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .search-row { display: flex; gap: 8px; align-items: center; }
+        .search-input {
+            width: 240px; padding: 9px 12px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 9px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text);
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 8px 12px 0; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 8px 14px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        .col-id { font-family: monospace; color: var(--text-muted); font-size: 12px; }
+        .col-name { font-weight: 600; }
+        .col-price { color: var(--success); font-weight: 600; }
+        .col-desc { color: var(--text-muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .stock-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; background: #f1f0eb; color: var(--text-muted); border: 1px solid var(--border); }
+        .stock-low { background: rgba(220,38,38,0.08); color: var(--danger); border-color: rgba(220,38,38,0.2); }
+
+        .action-edit { color: #d97706; font-weight: 600; text-decoration: none; font-size: 13px; margin-right: 12px; }
+        .action-edit:hover { text-decoration: underline; }
+        .action-del { color: var(--danger); font-weight: 600; text-decoration: none; font-size: 13px; }
+        .action-del:hover { text-decoration: underline; }
+
+        .archive-link { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; }
+        .archive-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="header-left">
+        <h1>Inventory</h1>
+        <p>Manage your products and stock levels</p>
+    </div>
+    <div class="nav-btns">
+        <button onclick="window.location.href='/menu'" class="nav-btn">← Menu</button>
+        <button onclick="window.location.href='/dashboard'" class="nav-btn nav-btn-accent">Dashboard</button>
+    </div>
+</div>
+
+<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+<!-- Add Product -->
+<div class="card" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+    <div class="card-title">Add New Product</div>
+    <form th:action="@{/items/add}" th:object="${newItem}" method="post" class="add-form">
+        <div class="input-group"><label>Name</label><input type="text" th:field="*{name}" required placeholder="Item name"></div>
+        <div class="input-group"><label>Description</label><input type="text" th:field="*{description}" placeholder="Details..."></div>
+        <div class="input-group"><label>Category</label><input type="text" th:field="*{category}" placeholder="Type"></div>
+        <div class="input-group"><label>Price (₱)</label><input type="number" step="0.01" th:field="*{price}" required></div>
+        <div class="input-group"><label>Stock</label><input type="number" th:field="*{stock}" required></div>
+        <button type="submit" class="btn-primary">Add Item</button>
+    </form>
+</div>
+
+<!-- Inventory list -->
+<div class="card">
+    <div class="toolbar">
+        <div class="card-title" style="margin-bottom:0;">Current Stock</div>
+        <div class="search-row">
+            <a th:href="@{/items/archive}" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')" class="archive-link">View Archived</a>
+            <form th:action="@{/items}" method="get" style="display:flex; gap:8px; margin-left:12px;">
+                <input type="text" name="search" class="search-input" placeholder="Search items..." th:value="${param.search}">
+                <button type="submit" class="btn-primary" style="height:38px;">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Description</th><th>Category</th><th>Price</th><th>Stock</th>
+                <th sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${items}">
+                <td class="col-id" th:text="${'#BH-' + item.id}"></td>
+                <td class="col-name" th:text="${item.name}"></td>
+                <td class="col-desc" th:text="${item.description}" th:title="${item.description}"></td>
+                <td style="color:var(--text-muted); font-size:12px;" th:text="${item.category}"></td>
+                <td class="col-price" th:text="${'₱' + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                <td>
+                    <span th:class="${item.stock < 10} ? 'stock-badge stock-low' : 'stock-badge'"
+                          th:text="${item.stock + ' units'}"></span>
+                </td>
+                <td sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+                    <a th:href="@{/items/edit/{id}(id=${item.id})}" class="action-edit">Edit</a>
+                    <a th:href="@{/items/delete/{id}(id=${item.id})}" class="action-del" onclick="return confirm('Remove this item?')">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

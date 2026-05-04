@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Edit Product</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --border: #e4e2dc; --text: #1a1a1a; --text-muted: #6b7280; --input-bg: #fafaf8;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif; background: var(--bg);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 24px;
+        }
+        .card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+            padding: 44px 40px; width: 100%; max-width: 520px;
+            box-shadow: 0 6px 32px rgba(0,0,0,0.07);
+            animation: rise .5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        .card-header { margin-bottom: 28px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); text-decoration: none; margin-bottom: 16px; transition: color .2s; }
+        .back-link:hover { color: var(--accent); }
+        .card-header h1 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.4px; margin-bottom: 4px; }
+        .card-header p { font-size: 14px; color: var(--text-muted); }
+        .divider { width: 28px; height: 2px; background: var(--accent); border-radius: 2px; margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 7px; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 11px 14px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text);
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #b4b1a9; }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: #fff;
+        }
+        .form-group textarea { resize: vertical; min-height: 90px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .btn {
+            width: 100%; padding: 13px; background: var(--accent); color: #fff;
+            border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px;
+            transition: background .2s, transform .15s, box-shadow .2s;
+        }
+        .btn:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.28); transform: translateY(-1px); }
+
+        .btn-ghost {
+            width: 100%; padding: 11px; background: transparent; color: var(--text-muted);
+            border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 500;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px; transition: all .2s;
+        }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <a href="javascript:history.back()" class="back-link">← Back</a>
+        <h1>Edit Product</h1>
+        <p>Update the details below to save changes</p>
+    </div>
+    <div class="divider"></div>
+
+    <form th:action="@{/items/update}" th:object="${item}" method="post">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" th:field="*{name}" required placeholder="e.g. Industrial Gasket">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea th:field="*{description}" placeholder="Technical details or notes..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <input type="text" th:field="*{category}" placeholder="e.g. Hardware, Electronics">
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Price (₱)</label>
+                <input type="number" step="0.01" th:field="*{price}" required>
+            </div>
+            <div class="form-group">
+                <label>Stock</label>
+                <input type="number" th:field="*{stock}" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn">Save Changes</button>
+        <button type="button" onclick="history.back()" class="btn-ghost">Cancel</button>
+    </form>
+</div>
+</body>
+</html>

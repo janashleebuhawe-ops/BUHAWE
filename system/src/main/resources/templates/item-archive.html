@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Product Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb;
+            --success: #16a34a; --danger: #dc2626;
+            --border: #e4e2dc; --text: #1a1a1a; --text-muted: #6b7280;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; padding: 40px; color: var(--text); }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1100px; margin: 0 auto 28px auto;
+        }
+        .header-left h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 3px; }
+        .header-left p { font-size: 14px; color: var(--text-muted); }
+        .back-btn {
+            font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none;
+            background: var(--surface); border: 1px solid var(--border); padding: 9px 18px;
+            border-radius: 9px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+        }
+        .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px;
+            max-width: 1100px; margin: 0 auto; box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+            animation: fadeIn .4s ease;
+        }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        .card-info { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .card-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+        .card-info p { font-size: 13px; color: var(--text-muted); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 0 12px 0; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+        .item-id { font-family: monospace; color: var(--text-muted); font-size: 12px; }
+        .item-name { font-weight: 600; }
+        .price-cell { font-weight: 600; color: var(--text); }
+
+        .badge-inactive {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(220,38,38,0.08); color: var(--danger);
+            border: 1px solid rgba(220,38,38,0.2); padding: 4px 10px;
+            border-radius: 100px; font-size: 11px; font-weight: 600;
+        }
+
+        .btn-restore {
+            background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2);
+            padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            text-decoration: none; display: inline-block; transition: all .2s;
+        }
+        .btn-restore:hover { background: var(--success); color: white; border-color: var(--success); }
+
+        .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 14px; }
+        .empty-state span { font-size: 28px; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="header-left">
+        <h1>Product Archive</h1>
+        <p>Hidden or inactive products that cannot be ordered</p>
+    </div>
+    <button onclick="history.back()" class="back-btn">← Go Back</button>
+</div>
+
+<div class="card">
+    <div class="card-info">
+        <h3>Archived Inventory</h3>
+        <p>Restore a product to make it available for orders again.</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Last Price</th>
+                <th>Status</th>
+                <th sec:authorize="hasRole('ADMIN')">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${items}">
+                <td class="item-id" th:text="${'#BH-' + item.id}"></td>
+                <td class="item-name" th:text="${item.name}"></td>
+                <td style="color:var(--text-muted);" th:text="${item.category}"></td>
+                <td class="price-cell" th:text="${'₱' + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                <td><span class="badge-inactive"><span style="font-size:7px;">●</span> Inactive</span></td>
+                <td sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/items/restore/{id}(id=${item.id})}" class="btn-restore">Restore</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(items)}">
+                <td colspan="6">
+                    <div class="empty-state">
+                        <span>📂</span>
+                        No archived products found.
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

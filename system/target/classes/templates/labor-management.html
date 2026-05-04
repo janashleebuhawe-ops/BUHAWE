@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Personnel</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --accent-light: rgba(37,99,235,0.08); --success: #16a34a; --danger: #dc2626;
+            --border: #e4e2dc; --text: #1a1a1a; --text-muted: #6b7280; --input-bg: #fafaf8;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; padding: 40px; color: var(--text); }
+
+        /* ── Page Header ── */
+        .page-header { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 24px auto; }
+        .header-left h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 3px; }
+        .header-left p { font-size: 14px; color: var(--text-muted); }
+        .nav-btns { display: flex; gap: 8px; }
+        .nav-btn {
+            font-size: 13px; font-weight: 500; color: var(--text-muted); background: var(--surface);
+            border: 1px solid var(--border); padding: 9px 16px; border-radius: 9px;
+            cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all .2s;
+        }
+        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .nav-btn-accent { color: var(--accent); border-color: rgba(37,99,235,0.3); background: var(--accent-light); }
+        .nav-btn-accent:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* ── Alert ── */
+        .alert { max-width: 1200px; margin: 0 auto 16px auto; padding: 12px 16px; border-radius: 10px; font-size: 13px; }
+        .alert-success { background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2); font-weight: 500; }
+
+        /* ── Card ── */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 1200px; margin: 0 auto 20px auto; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+
+        /* ── Add Form ── */
+        .add-form { display: grid; grid-template-columns: 2fr 1.2fr 1fr auto; gap: 12px; align-items: flex-end; }
+        .input-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 9px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); transition: border-color .2s;
+        }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+        .input-group select { appearance: none; cursor: pointer; }
+
+        .btn-primary { padding: 0 20px; height: 42px; background: var(--accent); color: white; border: none; border-radius: 9px; font-weight: 600; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: background .2s; }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        /* ── Search Bar ── */
+        .table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+        .search-input {
+            padding: 9px 13px; border: 1px solid var(--border); border-radius: 9px;
+            font-size: 13px; width: 260px; font-family: 'DM Sans', sans-serif;
+            background: var(--input-bg); color: var(--text); transition: border-color .2s;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+
+        /* ── Table ── */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 8px 12px 0; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 8px 14px 0; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+
+        .col-name { font-weight: 600; }
+        .role-badge { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(37,99,235,0.2); }
+        .wage-val { font-weight: 600; color: var(--success); }
+        .wage-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .bar-bg { background: #f1f0eb; border-radius: 4px; height: 5px; width: 100%; margin-top: 5px; }
+        .bar-fill { height: 5px; border-radius: 4px; transition: width .5s ease; }
+
+        .status-active { color: var(--success); font-weight: 700; font-size: 12px; }
+        .status-inactive { color: var(--danger); font-weight: 700; font-size: 12px; }
+
+        /* ── Status Toggle Button ── */
+        .status-toggle {
+            font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+            padding: 5px 12px; border-radius: 20px; border: none; cursor: pointer; transition: all .2s;
+        }
+        .toggle-active  { background: rgba(22,163,74,0.1);  color: var(--success); }
+        .toggle-active:hover  { background: var(--success); color: white; }
+        .toggle-inactive { background: rgba(220,38,38,0.08); color: var(--danger); }
+        .toggle-inactive:hover { background: var(--danger); color: white; }
+
+        /* ── Empty State ── */
+        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 0; font-size: 14px; }
+
+        /* ── Action Buttons ── */
+        .action-group { display: flex; gap: 6px; }
+        .btn-sm { padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s; border: 1px solid; }
+        .btn-toggle-start { color: var(--success); border-color: rgba(22,163,74,0.3); background: rgba(22,163,74,0.06); }
+        .btn-toggle-start:hover { background: var(--success); color: white; border-color: var(--success); }
+        .btn-toggle-end { color: var(--danger); border-color: rgba(220,38,38,0.3); background: rgba(220,38,38,0.06); }
+        .btn-toggle-end:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-edit { color: var(--text-muted); border-color: var(--border); background: var(--surface); }
+        .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Modal ── */
+        .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal.open { display: flex; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 420px; box-shadow: 0 16px 48px rgba(0,0,0,0.12); animation: rise .3s ease; }
+        @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .modal-group { margin-bottom: 14px; }
+        .modal-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+        .modal-group input, .modal-group select {
+            width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 9px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text);
+        }
+        .modal-group input:focus, .modal-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+        .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+        .modal-save { flex: 1; padding: 11px; background: var(--accent); color: white; border: none; border-radius: 9px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background .2s; }
+        .modal-save:hover { background: var(--accent-hover); }
+        .modal-cancel { flex: 1; padding: 11px; background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); border-radius: 9px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .2s; }
+        .modal-cancel:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            body { padding: 20px; }
+            .add-form { grid-template-columns: 1fr; }
+            .table-toolbar { justify-content: stretch; }
+            .search-input { width: 100%; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .modal-box { width: calc(100% - 40px); padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="header-left">
+        <h1>Personnel</h1>
+        <p>Manage staff profiles, shifts, and payroll</p>
+    </div>
+    <div class="nav-btns">
+        <button onclick="window.location.href='/menu'" class="nav-btn">← Menu</button>
+        <button onclick="window.location.href='/dashboard'" class="nav-btn nav-btn-accent">Dashboard</button>
+    </div>
+</div>
+
+<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+<!-- Add Staff -->
+<div class="card" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')" th:if="${not #lists.isEmpty(availableUsers)}">
+    <div class="card-title">👤 Add Staff Profile</div>
+    <form th:action="@{/labor/activate}" method="post">
+        <div class="add-form">
+            <div class="input-group">
+                <label>Select User</label>
+                <select name="userId" required>
+                    <option th:each="u : ${availableUsers}" th:value="${u.id}" th:text="${u.username + ' (' + u.role + ')'}"></option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Job Position</label>
+                <input type="text" name="position" placeholder="e.g. Server" required autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>Daily Pay (₱)</label>
+                <input type="number" step="0.01" name="dailyWage" placeholder="0.00" required autocomplete="off">
+            </div>
+            <button type="submit" class="btn-primary">Add Profile</button>
+        </div>
+    </form>
+</div>
+
+<!-- Staff Table -->
+<div class="card">
+    <div class="card-title">📋 Staff Working Hours & Operations</div>
+
+    <!-- Search Bar -->
+    <div class="table-toolbar">
+        <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="🔍 Search staff..."
+            oninput="filterTable(this.value)"
+        >
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role / Position</th>
+                <th>Hourly / Daily Pay</th>
+                <th>Hours Rendered</th>
+                <th>Total Earnings</th>
+                <th>Status</th>
+                <th sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="staffTableBody">
+            <!-- Empty State -->
+            <tr id="emptyRow" th:if="${#lists.isEmpty(labors)}">
+                <td colspan="7">
+                    <div class="empty-state">😶 No staff profiles yet.</div>
+                </td>
+            </tr>
+
+            <tr th:each="l : ${labors}"
+                th:attr="data-active=${l.active}, data-hours=${l.activeHours ?: 0}, data-wage=${l.dailyWage}, data-shift-start=${l.shiftStartedAt != null ? l.shiftStartedAt : ''}">
+                <td class="col-name" th:text="${l.systemAccount?.username}"></td>
+                <td><span class="role-badge" th:text="${l.position}"></span></td>
+                <td>
+                    <div class="wage-val" th:text="'₱' + ${#numbers.formatDecimal(l.dailyWage, 1, 'COMMA', 2, 'POINT')}"></div>
+                    <div class="wage-sub" th:text="'(' + '₱' + ${#numbers.formatDecimal(l.dailyWage / 8.0, 1, 'COMMA', 2, 'POINT')} + '/hr)'"></div>
+                </td>
+                <td>
+                    <div class="live-hours" style="font-weight:600;" th:text="${#numbers.formatDecimal(l.activeHours ?: 0, 1, 2) + ' hrs'}"></div>
+                    <div class="bar-bg">
+                        <div class="bar-fill live-bar"
+                             th:with="hours=${l.activeHours ?: 0}, pct=${((hours / 8.0 * 100) > 100) ? 100 : (hours / 8.0 * 100)}"
+                             th:style="'width:' + ${pct} + '%; background:' + (${hours >= 8} ? 'var(--success)' : 'var(--accent)') + ';'">
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="wage-val live-earnings"
+                          th:with="wage=${(l.dailyWage / 8.0) * (l.activeHours ?: 0)}"
+                          th:text="'₱' + ${#numbers.formatDecimal(wage, 1, 'COMMA', 2, 'POINT')}">
+                    </span>
+                </td>
+                <td>
+                    <form th:action="@{/labor/toggle-status/{id}(id=${l.id})}" method="post" style="margin:0;">
+                        <button type="submit" class="status-toggle"
+                                th:classappend="${l.active} ? ' toggle-active' : ' toggle-inactive'"
+                                th:text="${l.active ? '● Active' : '○ Inactive'}">
+                        </button>
+                    </form>
+                </td>
+                <td sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+                    <div class="action-group">
+                        <button class="btn-sm btn-edit"
+                                th:onclick="openModal([[${l.id}]], [[${l.position}]], [[${l.dailyWage}]], [[${l.active}]], [[${l.activeHours}]])">
+                            Edit
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+    <div class="modal-box">
+        <div class="modal-title">Edit Staff Profile</div>
+        <form th:action="@{/labor/update}" method="post">
+            <input type="hidden" name="id" id="editId">
+            <div class="modal-group">
+                <label>Position</label>
+                <input type="text" name="position" id="editPosition" required autocomplete="off">
+            </div>
+            <div class="modal-group">
+                <label>Daily Pay (₱)</label>
+                <input type="number" step="0.01" name="dailyWage" id="editWage" required autocomplete="off">
+            </div>
+            <div class="modal-group">
+                <label>Active Hours</label>
+                <input type="number" step="0.01" name="activeHours" id="editHours" required autocomplete="off">
+            </div>
+            <div class="modal-group">
+                <label>Status</label>
+                <select name="active" id="editActive">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="modal-save">Save Changes</button>
+                <button type="button" onclick="closeModal()" class="modal-cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('editModal');
+
+    function openModal(id, position, wage, active, hours) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editPosition').value = position;
+        document.getElementById('editWage').value = wage;
+        document.getElementById('editHours').value = hours;
+        document.getElementById('editActive').value = active.toString();
+        modal.classList.add('open');
+    }
+
+    function closeModal() {
+        modal.classList.remove('open');
+    }
+
+    // Close modal on backdrop click
+    window.onclick = e => { if (e.target === modal) closeModal(); };
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ── Live ticking hours & earnings for active staff ──
+    function formatNum(n) {
+        return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    document.querySelectorAll('#staffTableBody tr[data-active]').forEach(row => {
+        const isActive = row.dataset.active === 'true';
+        if (!isActive) return;
+
+        const previousHours = parseFloat(row.dataset.hours) || 0;
+        const dailyWage     = parseFloat(row.dataset.wage) || 0;
+        const hourlyRate    = dailyWage / 8.0;
+        const shiftStart    = row.dataset.shiftStart ? new Date(row.dataset.shiftStart) : null;
+
+        const hoursEl    = row.querySelector('.live-hours');
+        const earningsEl = row.querySelector('.live-earnings');
+        const barEl      = row.querySelector('.live-bar');
+
+        function tick() {
+            let totalHours = previousHours;
+
+            if (shiftStart) {
+                const elapsedMs    = Date.now() - shiftStart.getTime();
+                const elapsedHours = elapsedMs / 1000 / 3600;
+                totalHours = previousHours + elapsedHours;
+            }
+
+            hoursEl.textContent = totalHours.toFixed(4) + ' hrs';
+
+            const earned = hourlyRate * totalHours;
+            earningsEl.textContent = '₱' + formatNum(earned);
+
+            const pct = Math.min((totalHours / 8.0) * 100, 100);
+            barEl.style.width = pct + '%';
+            barEl.style.background = totalHours >= 8 ? 'var(--success)' : 'var(--accent)';
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    });
+
+    function filterTable(val) {
+        const rows = document.querySelectorAll('#staffTableBody tr:not(#emptyRow)');
+        const query = val.toLowerCase().trim();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const match = row.innerText.toLowerCase().includes(query);
+            row.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+
+        // Show "no results" feedback in empty row if search yields nothing
+        const emptyRow = document.getElementById('emptyRow');
+        if (emptyRow) {
+            emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+            if (visibleCount === 0 && query) {
+                emptyRow.querySelector('div').textContent = `🔍 No staff found for "${val}".`;
+            }
+        }
+    }
+</script>
+</body>
+</html>

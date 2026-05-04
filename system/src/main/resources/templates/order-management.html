@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUHAWE | Sales</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4f0; --surface: #ffffff; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --accent-light: rgba(37,99,235,0.08); --success: #16a34a; --danger: #dc2626;
+            --border: #e4e2dc; --text: #1a1a1a; --text-muted: #6b7280; --input-bg: #fafaf8;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; padding: 24px; color: var(--text); }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; max-width: 1480px; margin: 0 auto 20px auto; }
+        .header-left h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+        .nav-btns { display: flex; gap: 8px; }
+        .nav-btn { font-size: 13px; font-weight: 500; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: 9px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s; }
+        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .nav-btn-accent { color: var(--accent); border-color: rgba(37,99,235,0.3); background: var(--accent-light); }
+        .nav-btn-accent:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .alert { max-width: 1480px; margin: 0 auto 16px auto; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; }
+        .alert-success { background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2); }
+        .alert-error   { background: rgba(220,38,38,0.08); color: var(--danger); border: 1px solid rgba(220,38,38,0.2); }
+
+        .layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; max-width: 1480px; margin: 0 auto; }
+
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .card:last-child { margin-bottom: 0; }
+        .card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+
+        /* Product grid */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+        .product-item { background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s; }
+        .product-item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.1); background: var(--accent-light); }
+        .product-item h4 { font-size: 13px; font-weight: 600; color: var(--text); margin: 6px 0 3px 0; }
+        .product-item .price { color: var(--success); font-weight: 700; font-size: 13px; }
+        .product-item .stock-tag { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+
+        /* Cart */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        .field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
+        input[type="text"], input[type="number"], .qty-input, select {
+            background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
+            padding: 10px 12px; border-radius: 9px; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            transition: border-color .2s;
+        }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+
+        .pay-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .pay-tab { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-muted); font-weight: 600; font-size: 12px; cursor: pointer; text-align: center; transition: .2s; font-family: 'DM Sans', sans-serif; }
+        .pay-tab.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+        .pay-tab:hover { border-color: var(--accent); color: var(--accent); }
+
+        .change-display { margin-top: 8px; padding: 9px 12px; border-radius: 9px; font-weight: 600; font-size: 13px; display: none; }
+        .change-ok { background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2); }
+        .change-short { background: rgba(220,38,38,0.08); color: var(--danger); border: 1px solid rgba(220,38,38,0.2); }
+
+        .btn-place { width: 100%; padding: 13px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 16px; transition: background .2s, transform .15s; font-family: 'DM Sans', sans-serif; }
+        .btn-place:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        .badge-cash  { background: rgba(22,163,74,0.1);  color: var(--success); border: 1px solid rgba(22,163,74,0.2); }
+        .badge-gcash { background: rgba(37,99,235,0.1);  color: var(--accent);  border: 1px solid rgba(37,99,235,0.2); }
+        .badge-card  { background: rgba(124,58,237,0.1); color: #7c3aed;        border: 1px solid rgba(124,58,237,0.2); }
+        .pay-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .status-badge { background: rgba(217,119,6,0.1); color: #d97706; border: 1px solid rgba(217,119,6,0.2); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; z-index: 2000; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(4px); }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); margin: 6% auto; padding: 28px; border-radius: 16px; width: 420px; box-shadow: 0 16px 48px rgba(0,0,0,0.12); }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+
+        .receipt-header { text-align: center; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
+        .receipt-header h2 { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+        .receipt-header p { font-size: 12px; color: var(--text-muted); }
+        .receipt-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+        .receipt-row.total { border-top: 1px dashed var(--border); margin-top: 8px; padding-top: 10px; font-size: 15px; font-weight: 700; color: var(--success); }
+        .receipt-row.change { color: #d97706; font-weight: 600; }
+
+        .btn-print { width: 100%; padding: 12px; background: rgba(22,163,74,0.08); color: var(--success); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif; }
+        .btn-print:hover { background: var(--success); color: white; }
+        .btn-close { width: 100%; padding: 11px; background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); border-radius: 10px; font-weight: 500; font-size: 13px; cursor: pointer; margin-top: 8px; font-family: 'DM Sans', sans-serif; }
+        .btn-close:hover { border-color: var(--accent); color: var(--accent); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: fixed; left: 50%; top: 0; transform: translateX(-50%); width: 300px; background: white !important; color: black !important; padding: 20px; font-family: monospace; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="header-left"><h1>Sales Terminal</h1></div>
+    <div class="nav-btns">
+        <button onclick="window.location.href='/menu'" class="nav-btn">← Menu</button>
+        <button onclick="window.location.href='/dashboard'" class="nav-btn nav-btn-accent">Dashboard</button>
+    </div>
+</div>
+
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+<div class="layout">
+    <!-- Left: Items + History -->
+    <div>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:0;">Items</div>
+                <input type="text" id="itemSearch" onkeyup="filterProducts()" placeholder="Search..." style="width:180px; padding:7px 10px; border-radius:8px;">
+            </div>
+            <div class="product-grid" id="productGrid">
+                <div th:each="i : ${items}" class="product-item"
+                     th:onclick="quickAdd([[${i.id}]], [[${i.name}]], [[${i.price}]], [[${i.stock}]])">
+                    <div style="font-size:18px; opacity:.7;">📦</div>
+                    <h4 th:text="${i.name}">Name</h4>
+                    <div class="price" th:text="'₱' + ${#numbers.formatDecimal(i.price, 1, 2)}">₱0.00</div>
+                    <div class="stock-tag" th:text="${i.stock + ' in stock'}">0 in stock</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Order History</div>
+            <table>
+                <thead><tr><th>Customer</th><th>Total</th><th>Method</th><th>Status</th><th sec:authorize="hasRole('ADMIN')"></th></tr></thead>
+                <tbody>
+                    <tr th:each="ord : ${orders}" style="cursor:pointer;"
+                        th:data-customer="${ord.customerName}" th:data-total="${ord.totalAmount}"
+                        th:data-payment="${ord.paymentMethod}" th:data-paid="${ord.amountPaid}" th:data-change="${ord.changeAmount}"
+                        th:data-items="${ord.orderItems != null ? #strings.listJoin(ord.orderItems.![item.name + ' (x' + quantity + ')'], ' | ') : ''}"
+                        onclick="viewDetails(this)">
+                        <td style="font-weight:600;" th:text="${ord.customerName}"></td>
+                        <td style="color:var(--success); font-weight:700;" th:text="'₱' + ${#numbers.formatDecimal(ord.totalAmount, 1, 2)}"></td>
+                        <td>
+                            <span th:if="${ord.paymentMethod == 'CASH'}"  class="pay-badge badge-cash">Cash</span>
+                            <span th:if="${ord.paymentMethod == 'GCASH'}" class="pay-badge badge-gcash">GCash</span>
+                            <span th:if="${ord.paymentMethod == 'CARD'}"  class="pay-badge badge-card">Card</span>
+                        </td>
+                        <td><span class="status-badge" th:text="${ord.status}"></span></td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <a th:href="@{/orders/delete/{id}(id=${ord.id})}"
+                               style="color:var(--danger); font-size:12px; font-weight:600; text-decoration:none;"
+                               onclick="event.stopPropagation(); return confirm('Cancel this order?');">Cancel</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right: Checkout -->
+    <div>
+        <div class="card" style="position:sticky; top:20px;">
+            <div class="card-title">Current Order</div>
+            <form th:action="@{/orders/add}" method="post" id="orderForm">
+                <div id="receiptItemsPayload"></div>
+
+                <div style="margin-bottom:16px;">
+                    <span class="field-label">Customer Name</span>
+                    <input type="text" name="customerName" id="customerNameInput" placeholder="Enter customer name..." required style="width:100%;">
+                </div>
+
+                <table>
+                    <thead><tr><th>Item</th><th>Qty</th><th>Total</th><th></th></tr></thead>
+                    <tbody id="cartBody"></tbody>
+                </table>
+
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:14px; color:var(--text-muted); font-weight:500;">Grand Total</span>
+                    <span style="font-size:22px; font-weight:800; color:var(--success);">₱<span id="grandTotalDisplay">0.00</span></span>
+                </div>
+
+                <div style="margin-top:16px;">
+                    <span class="field-label">Payment Method</span>
+                    <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="CASH">
+                    <div class="pay-tabs">
+                        <button type="button" class="pay-tab active" onclick="selectPayment('CASH', this)">💵 Cash</button>
+                        <button type="button" class="pay-tab" onclick="selectPayment('GCASH', this)">📱 GCash</button>
+                        <button type="button" class="pay-tab" onclick="selectPayment('CARD', this)">💳 Card</button>
+                    </div>
+                    <div id="amountPaidSection">
+                        <span class="field-label">Amount Paid (₱)</span>
+                        <input type="number" name="amountPaid" id="amountPaidInput" placeholder="0.00" step="0.01" min="0" oninput="calculateChange()" style="width:100%;">
+                        <div class="change-display" id="changeDisplay">Change: ₱<span id="changeAmount">0.00</span></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-place" onclick="return validateOrder()">Place Order</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div id="orderDetailModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-title">Order Details</div>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:10px;">Customer: <strong id="viewCustomer" style="color:var(--text);"></strong></p>
+        <div style="background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin:14px 0;">
+            <div id="viewItem" style="color:var(--text-muted); font-size:13px;"></div>
+        </div>
+        <p style="text-align:right; font-size:16px; font-weight:700;">Total: <span style="color:var(--success);">₱<span id="viewTotal"></span></span></p>
+        <p style="color:var(--text-muted); font-size:13px; margin-top:6px;">Payment: <strong id="viewPayment" style="color:var(--text);"></strong></p>
+        <button class="btn-close" onclick="closeModal('orderDetailModal')" style="margin-top:16px;">Close</button>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receiptModal" class="modal">
+    <div class="modal-box">
+        <div id="printArea">
+            <div class="receipt-header">
+                <h2>🧾 BUHAWE</h2>
+                <p>Official Receipt</p>
+                <p id="rDateTime" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></p>
+            </div>
+            <div class="receipt-row"><span style="color:var(--text-muted);">Customer</span><span id="rCustomer" style="font-weight:700;"></span></div>
+            <div class="receipt-row"><span style="color:var(--text-muted);">Payment</span><span id="rPayment" style="font-weight:700;"></span></div>
+            <hr style="border:none; border-top:1px dashed var(--border); margin:10px 0;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Items:</div>
+            <div id="rItemsList"></div>
+            <hr style="border:none; border-top:1px dashed var(--border); margin:10px 0;">
+            <div class="receipt-row total"><span>Total</span><span>₱<span id="rTotal"></span></span></div>
+            <div class="receipt-row" id="rAmountPaidRow"><span style="color:var(--text-muted);">Paid</span><span style="font-weight:700;">₱<span id="rAmountPaid"></span></span></div>
+            <div class="receipt-row change" id="rChangeRow"><span>Change</span><span>₱<span id="rChange"></span></span></div>
+            <hr style="border:none; border-top:1px dashed var(--border); margin:10px 0;">
+            <p style="text-align:center; font-size:12px; color:var(--text-muted);">Thank you for your order! 🎉</p>
+        </div>
+        <div id="receiptButtons" style="margin-top:16px;">
+            <button class="btn-print" onclick="printReceipt()">🖨️ Print Receipt</button>
+            <button class="btn-close" onclick="closeModal('receiptModal')">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Thymeleaf receipt data -->
+<span id="th-receiptCustomer" th:text="${receiptCustomer}" style="display:none;"></span>
+<span id="th-receiptTotal"    th:text="${receiptTotal}"    style="display:none;"></span>
+<span id="th-receiptPayment"  th:text="${receiptPayment}"  style="display:none;"></span>
+<span id="th-receiptAmountPaid" th:text="${receiptAmountPaid}" style="display:none;"></span>
+<span id="th-receiptChange"   th:text="${receiptChange}"   style="display:none;"></span>
+
+<script th:inline="javascript">
+    window.onload = function() {
+        const customer = document.getElementById('th-receiptCustomer').innerText.trim();
+        if (customer) {
+            const total   = parseFloat(document.getElementById('th-receiptTotal').innerText) || 0;
+            const payment = document.getElementById('th-receiptPayment').innerText.trim();
+            const paid    = parseFloat(document.getElementById('th-receiptAmountPaid').innerText) || 0;
+            const change  = parseFloat(document.getElementById('th-receiptChange').innerText) || 0;
+            document.getElementById('rCustomer').innerText = customer;
+            document.getElementById('rTotal').innerText    = total.toFixed(2);
+            document.getElementById('rPayment').innerText  = payment;
+            document.getElementById('rAmountPaid').innerText = paid.toFixed(2);
+            document.getElementById('rChange').innerText   = change.toFixed(2);
+            document.getElementById('rDateTime').innerText = new Date().toLocaleString();
+            const savedItems = JSON.parse(localStorage.getItem('receiptItemsData')) || [];
+            document.getElementById('rItemsList').innerHTML = savedItems.map(i =>
+                `<div class="receipt-row" style="font-size:12px;padding:2px 0;"><span>${i.name} x${i.qty}</span><span>₱${i.total}</span></div>`
+            ).join('');
+            if (payment !== 'CASH') document.getElementById('rChangeRow').style.display = 'none';
+            document.getElementById('receiptModal').style.display = 'block';
+            localStorage.removeItem('receiptItemsData');
+        }
+    };
+
+    function printReceipt() { document.getElementById('receiptButtons').style.display='none'; window.print(); document.getElementById('receiptButtons').style.display='block'; }
+
+    function selectPayment(method, btn) {
+        document.getElementById('paymentMethodInput').value = method;
+        document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const section = document.getElementById('amountPaidSection');
+        const input   = document.getElementById('amountPaidInput');
+        if (method === 'CASH') { section.style.display='block'; input.required=true; }
+        else { section.style.display='none'; input.required=false; input.value=''; document.getElementById('changeDisplay').style.display='none'; }
+    }
+
+    function calculateChange() {
+        const total = parseFloat(document.getElementById('grandTotalDisplay').innerText) || 0;
+        const paid  = parseFloat(document.getElementById('amountPaidInput').value) || 0;
+        const change = paid - total;
+        const el = document.getElementById('changeDisplay');
+        if (paid > 0) {
+            el.style.display = 'block';
+            el.className = 'change-display ' + (change >= 0 ? 'change-ok' : 'change-short');
+            el.innerHTML = change >= 0
+                ? `Change: ₱<span id="changeAmount">${change.toFixed(2)}</span>`
+                : `⚠️ Short by ₱<span id="changeAmount">${Math.abs(change).toFixed(2)}</span>`;
+        } else { el.style.display='none'; }
+    }
+
+    function validateOrder() {
+        if (document.getElementById('cartBody').children.length === 0) { alert('Cart is empty!'); return false; }
+        if (document.getElementById('paymentMethodInput').value === 'CASH') {
+            const total = parseFloat(document.getElementById('grandTotalDisplay').innerText)||0;
+            const paid  = parseFloat(document.getElementById('amountPaidInput').value)||0;
+            if (paid < total) { alert('Amount paid is less than the total!'); return false; }
+        }
+        const cartBody = document.getElementById('cartBody');
+        const items = Array.from(cartBody.children).map(row => ({
+            name: row.querySelector('span').innerText,
+            qty:  row.querySelector('.qty-input').value,
+            total: row.querySelector('.item-total').innerText
+        }));
+        localStorage.setItem('receiptItemsData', JSON.stringify(items));
+        const container = document.getElementById('receiptItemsPayload');
+        container.innerHTML = '';
+        Array.from(cartBody.children).forEach(row => {
+            const inp = document.createElement('input');
+            inp.type='hidden'; inp.name='quantities'; inp.value=row.querySelector('.qty-input').value;
+            container.appendChild(inp);
+        });
+        return true;
+    }
+
+    function quickAdd(id, name, price, stock) {
+        if (stock <= 0) { alert('Out of stock'); return; }
+        const tbody = document.getElementById('cartBody');
+        const existing = document.querySelector(`tr[data-id="${id}"]`);
+        if (existing) {
+            const qi = existing.querySelector('.qty-input');
+            const nq = parseInt(qi.value) + 1;
+            if (nq > stock) { alert('Not enough stock'); return; }
+            qi.value = nq; updateRow(qi, price);
+        } else {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', id);
+            row.innerHTML = `
+                <td><span style="font-weight:600;">${name}</span><input type="hidden" name="itemIds" value="${id}"></td>
+                <td><input type="number" name="quantities" value="1" min="1" max="${stock}" class="qty-input" oninput="updateRow(this,${price})" style="width:52px;text-align:center;padding:5px;"></td>
+                <td class="item-total" style="font-weight:700;color:var(--success);">${price.toFixed(2)}</td>
+                <td><button type="button" onclick="removeRow(this)" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;font-weight:800;">&times;</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+        updateGrandTotal();
+    }
+
+    function removeRow(btn) { btn.closest('tr').remove(); updateGrandTotal(); }
+    function updateRow(input, price) { input.closest('tr').querySelector('.item-total').innerText = ((parseInt(input.value)||0) * price).toFixed(2); updateGrandTotal(); }
+    function updateGrandTotal() {
+        const sum = Array.from(document.querySelectorAll('.item-total')).reduce((a,t)=>a+parseFloat(t.innerText),0);
+        document.getElementById('grandTotalDisplay').innerText = sum.toFixed(2);
+        calculateChange();
+    }
+
+    function filterProducts() {
+        const val = document.getElementById('itemSearch').value.toLowerCase();
+        document.querySelectorAll('.product-item').forEach(i => { i.style.display = i.innerText.toLowerCase().includes(val) ? 'block' : 'none'; });
+    }
+
+    function viewDetails(el) {
+        document.getElementById('viewCustomer').innerText = el.getAttribute('data-customer');
+        document.getElementById('viewTotal').innerText    = parseFloat(el.getAttribute('data-total')).toFixed(2);
+        document.getElementById('viewPayment').innerText  = el.getAttribute('data-payment') || 'N/A';
+        document.getElementById('viewItem').innerHTML = el.getAttribute('data-items').split(' | ').map(s=>`<div style="padding:2px 0;">${s}</div>`).join('');
+        document.getElementById('orderDetailModal').style.display = 'block';
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    window.onclick = e => {
+        if (e.target==document.getElementById('orderDetailModal')) closeModal('orderDetailModal');
+        if (e.target==document.getElementById('receiptModal'))      closeModal('receiptModal');
+    };
+</script>
+</body>
+</html>
